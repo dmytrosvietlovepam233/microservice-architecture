@@ -38,9 +38,7 @@ public class ResourceService {
         if (!"audio/mpeg".equalsIgnoreCase(contentType)) {
             throw new BadRequestException("Invalid file format: " + contentType + ". Only MP3 files are allowed");
         }
-        if (!isMp3(mp3Data)) {
-            throw new BadRequestException("Invalid file format: Only MP3 files are allowed");
-        }
+
         Resource resource = new Resource();
         resource.setData(mp3Data);
         Resource saved = resourceRepository.save(resource);
@@ -89,22 +87,13 @@ public class ResourceService {
         return deletedIds;
     }
 
-    private boolean isMp3(byte[] data) {
-        try {
-            String mimeType = tika.detect(data);
-            return "audio/mpeg".equals(mimeType);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
     private SongDto extractMetadata(byte[] mp3Data, Integer resourceId) {
         try (ByteArrayInputStream input = new ByteArrayInputStream(mp3Data)) {
             Metadata metadata = new Metadata();
             tika.parse(input, metadata);
 
             String name = metadata.get("dc:title");
-            String artist = metadata.get("xmpDM:albumArtist");
+            String artist = metadata.get("xmpDM:artist");
             String album = metadata.get("xmpDM:album");
             String durationSec = metadata.get("xmpDM:duration");
 
