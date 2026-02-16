@@ -11,12 +11,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ResourceService {
 
@@ -139,7 +141,7 @@ public class ResourceService {
         try {
             restTemplate.delete(url);
         } catch (Exception e) {
-            // TODO
+            log.warn("Not all metadata was deleted for id(s): {}. Exception: {}", idsParam, e.getMessage());
         }
     }
 }

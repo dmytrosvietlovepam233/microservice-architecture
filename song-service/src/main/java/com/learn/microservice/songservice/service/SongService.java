@@ -11,8 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class SongService {
@@ -21,13 +19,6 @@ public class SongService {
 
     public SongService(SongRepository songRepository) {
         this.songRepository = songRepository;
-    }
-
-    public List<SongDto> getAllSongs() {
-        return songRepository.findAll()
-                .stream()
-                .map(SongMapper::toDto)
-                .collect(Collectors.toList());
     }
 
     public SongDto getSongById(Integer id) {
@@ -46,27 +37,6 @@ public class SongService {
         Song song = SongMapper.toEntity(songDto);
         Song saved = songRepository.save(song);
         return SongMapper.toDto(saved);
-    }
-
-    public Optional<SongDto> updateSong(Integer id, SongDto songDto) {
-        return songRepository.findById(id)
-                .map(existing -> {
-                    existing.setName(songDto.getName());
-                    existing.setArtist(songDto.getArtist());
-                    existing.setAlbum(songDto.getAlbum());
-                    existing.setDuration(songDto.getDuration());
-                    existing.setYear(songDto.getYear());
-                    Song updated = songRepository.save(existing);
-                    return SongMapper.toDto(updated);
-                });
-    }
-
-    public boolean deleteSong(Integer id) {
-        if (songRepository.existsById(id)) {
-            songRepository.deleteById(id);
-            return true;
-        }
-        return false;
     }
 
     public List<Integer> deleteSongs(List<Integer> ids) {
