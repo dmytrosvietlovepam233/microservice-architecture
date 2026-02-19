@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   resource-db:
     image: postgres:17-alpine
@@ -8,6 +7,9 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
+    volumes:
+      - ./init-scripts/resource-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
   song-db:
     image: postgres:17-alpine
     environment:
@@ -16,3 +18,29 @@ services:
       POSTGRES_PASSWORD: postgres
     ports:
       - "5433:5432"
+    volumes:
+      - ./init-scripts/song-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  resource-service:
+    build: ./resource-service
+    environment:
+      SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
+      SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+    ports:
+      - "8071:8071"
+    depends_on:
+      - resource-db
+      - song-service
+
+  song-service:
+    build: ./song-service
+    environment:
+      SPRING_DATASOURCE_URL: ${SONG_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${SONG_DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+    ports:
+      - "8072:8072"
+    depends_on:
+      - song-db
