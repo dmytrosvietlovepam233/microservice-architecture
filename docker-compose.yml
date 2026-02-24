@@ -10,6 +10,11 @@ services:
     volumes:
       - ./init-scripts/resource-db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  eureka-service:
+    build: ./eureka-service
+    ports:
+      - "8761:8761"
+
   song-db:
     image: postgres:17-alpine
     environment:
@@ -28,11 +33,13 @@ services:
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       SONG_SERVICE_URL: ${SONG_SERVICE_URL}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: ${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
     ports:
       - "8071:8071"
     depends_on:
       - resource-db
       - song-service
+      - eureka-service
 
   song-service:
     build: ./song-service
@@ -40,7 +47,11 @@ services:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: ${EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE}
+    deploy:
+      replicas: 2
     ports:
-      - "8072:8072"
+      - "8072-8073:8072"
     depends_on:
       - song-db
+      - eureka-service
